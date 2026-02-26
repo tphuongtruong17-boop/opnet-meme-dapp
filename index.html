@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>MEMESLOTS — OP_NET</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#080808;--s1:#0f0f0f;--s2:#161616;--border:#1c1c1c;--border2:#262626;--acc:#f5ff00;--acc2:#ff3c00;--acc3:#00ffaa;--text:#efefef;--muted:#555;--muted2:#333}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.04) 2px,rgba(0,0,0,.04) 4px);pointer-events:none;z-index:9999}
+button{cursor:pointer} input,textarea{font-family:inherit}
+/* HEADER */
+header{display:flex;align-items:center;justify-content:space-between;padding:0 32px;height:60px;border-bottom:1px solid var(--border);position:sticky;top:0;background:rgba(8,8,8,.95);backdrop-filter:blur(16px);z-index:200}
+.logo{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:4px;color:var(--acc);text-shadow:0 0 24px rgba(245,255,0,.35);cursor:pointer}
+.logo span{color:var(--acc2)}
+.hnav{display:flex;gap:4px}
+.nb{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:2px;padding:8px 14px;background:none;border:1px solid transparent;color:var(--muted);transition:.15s}
+.nb:hover,.nb.active{color:var(--text);border-color:var(--border2)}
+.hright{display:flex;gap:8px;align-items:center}
+.netbadge{font-family:'Space Mono',monospace;font-size:9px;padding:4px 8px;border:1px solid #333;border-radius:2px;color:#888}
+#cBtn{font-family:'Space Mono',monospace;font-size:10px;font-weight:700;letter-spacing:2px;padding:9px 18px;background:var(--acc);color:#000;border:none;transition:.15s;clip-path:polygon(0 0,calc(100% - 7px) 0,100% 7px,100% 100%,7px 100%,0 calc(100% - 7px))}
+#cBtn:hover{background:#fff}
+#cBtn.on{background:var(--s2);color:var(--acc);border:1px solid var(--border2);clip-path:none}
+/* PAGES */
+.page{display:none;animation:fi .2s ease}
+.page.active{display:block}
+@keyframes fi{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+/* EXPLORE */
+.ehero{padding:48px 32px 32px;border-bottom:1px solid var(--border)}
+.ehero h1{font-family:'Bebas Neue',sans-serif;font-size:54px;letter-spacing:4px;line-height:1;margin-bottom:6px}
+.ehero h1 span{color:var(--acc)}
+.ehero p{color:var(--muted);font-size:14px;max-width:480px}
+.ectl{display:flex;align-items:center;gap:10px;padding:18px 32px;border-bottom:1px solid var(--border);flex-wrap:wrap}
+.sw{flex:1;min-width:200px;display:flex;align-items:center;background:var(--s1);border:1px solid var(--border);padding:0 12px;gap:8px}
+.sw input{flex:1;background:none;border:none;outline:none;color:var(--text);font-size:13px;padding:10px 0}
+.sw input::placeholder{color:var(--muted)}
+.tabs{display:flex;gap:2px}
+.tab{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:2px;padding:10px 12px;background:none;border:1px solid var(--border);color:var(--muted);transition:.15s}
+.tab.active{background:var(--s2);color:var(--text);border-color:var(--border2)}
+.tab:hover:not(.active){color:var(--text)}
+.bcreate{font-family:'Space Mono',monospace;font-size:10px;font-weight:700;letter-spacing:2px;padding:10px 18px;background:var(--acc);color:#000;border:none;clip-path:polygon(0 0,calc(100% - 6px) 0,100% 6px,100% 100%,6px 100%,0 calc(100% - 6px));transition:.15s;white-space:nowrap}
+.bcreate:hover{background:#fff}
+/* MEME GRID */
+.mgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1px;background:var(--border);padding:1px 32px 32px;margin-top:1px}
+.mcard{background:var(--bg);cursor:pointer;transition:.15s;overflow:hidden;border:1px solid var(--border)}
+.mcard:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.4)}
+.mcbanner{width:100%;aspect-ratio:16/9;background:linear-gradient(135deg,var(--s1),var(--s2));display:flex;align-items:center;justify-content:center;font-size:52px}
+.mcbody{padding:15px}
+.mctop{display:flex;align-items:center;gap:10px;margin-bottom:11px}
+.mclogo{width:36px;height:36px;border-radius:50%;background:var(--s2);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.mcn .mn{font-weight:600;font-size:14px}
+.mcn .ms{font-family:'Space Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:1px}
+.bdg{font-family:'Space Mono',monospace;font-size:8px;letter-spacing:1px;padding:2px 5px;margin-left:auto}
+.bdg.new{background:var(--acc3);color:#000}
+.bdg.hot{background:var(--acc2);color:#fff}
+.mcs{display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px}
+.ms2{background:var(--s1);padding:7px 9px}
+.ms2 .l{font-family:'Space Mono',monospace;font-size:8px;color:var(--muted);letter-spacing:1px;margin-bottom:2px}
+.ms2 .v{font-family:'Space Mono',monospace;font-size:11px}
+.ms2 .v.a{color:var(--acc)}.ms2 .v.a2{color:var(--acc2)}.ms2 .v.a3{color:var(--acc3)}
+.mcfoot{padding:10px 15px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+.mcfoot .cr{font-family:'Space Mono',monospace;font-size:9px;color:var(--muted)}
+.mcfoot .fp{font-family:'Space Mono',monospace;font-size:10px;color:var(--acc)}
+/* CREATE */
+.cwrap{max-width:640px;margin:0 auto;padding:48px 32px}
+.cwrap h1{font-family:'Bebas Neue',sans-serif;font-size:46px;letter-spacing:4px;margin-bottom:4px}
+.cwrap h1 span{color:var(--acc)}
+.csub{color:var(--muted);font-size:13px;margin-bottom:34px;line-height:1.6}
+.fsec{margin-bottom:30px}
+.fsec-t{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--muted);margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.fr{margin-bottom:13px}
+.fr label{display:block;font-size:10px;color:var(--muted);margin-bottom:5px;font-family:'Space Mono',monospace;letter-spacing:1px;text-transform:uppercase}
+.fi{width:100%;background:var(--s1);border:1px solid var(--border);color:var(--text);padding:11px 13px;font-size:14px;outline:none;transition:.15s}
+.fi:focus{border-color:var(--border2)}
+.fi::placeholder{color:var(--muted)}
+.fr2{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+.uarea{border:1px dashed var(--border2);padding:26px;text-align:center;cursor:pointer;transition:.15s;background:var(--s1)}
+.uarea:hover{border-color:var(--acc);background:rgba(245,255,0,.02)}
+.uarea .ui{font-size:24px;margin-bottom:5px}
+.uarea .ut{font-size:12px;color:var(--muted)}
+.uarea .ut span{color:var(--acc)}
+.iprev{width:100%;aspect-ratio:16/9;object-fit:cover;display:none;margin-top:10px;border:1px solid var(--border)}
+.lrow{display:flex;align-items:center;gap:13px}
+.lcirc{width:58px;height:58px;border-radius:50%;background:var(--s2);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:22px;overflow:hidden;flex-shrink:0}
+.lcirc img{width:100%;height:100%;object-fit:cover;display:none}
+.feebox{background:var(--s1);border:1px solid var(--border2);padding:15px;margin-bottom:18px}
+.feebox .ft{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--muted);margin-bottom:10px}
+.feerow{display:flex;justify-content:space-between;align-items:center;padding:5px 0}
+.feerow .fl{font-size:13px;color:var(--muted)}
+.feerow .fv{font-family:'Space Mono',monospace;font-size:13px;color:var(--acc)}
+.feerow .fm{font-family:'Space Mono',monospace;font-size:13px;color:var(--muted)}
+.fdiv{height:1px;background:var(--border);margin:7px 0}
+.bdeploy{width:100%;font-family:'Space Mono',monospace;font-size:12px;font-weight:700;letter-spacing:3px;padding:16px;background:var(--acc);color:#000;border:none;transition:.15s;clip-path:polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,10px 100%,0 calc(100% - 10px))}
+.bdeploy:hover{background:#fff}
+.bdeploy:disabled{opacity:.35;cursor:not-allowed;pointer-events:none}
+.dsteps{margin-top:26px;display:none}
+.dstep{display:flex;gap:13px;margin-bottom:13px}
+.dsn{width:26px;height:26px;border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-family:'Space Mono',monospace;font-size:10px;flex-shrink:0;color:var(--muted)}
+.dsn.active{border-color:var(--acc);color:var(--acc)}
+.dsn.done{border-color:var(--acc3);color:var(--acc3)}
+.dsc .dt{font-size:13px;font-weight:500;margin-bottom:1px}
+.dsc .dd{font-size:11px;color:var(--muted)}
+.dsc .dh{font-family:'Space Mono',monospace;font-size:9px;color:var(--acc3);margin-top:3px;word-break:break-all}
+/* DETAIL */
+.dback{display:flex;align-items:center;gap:8px;padding:16px 32px;border-bottom:1px solid var(--border);font-size:13px;color:var(--muted);cursor:pointer;transition:.15s}
+.dback:hover{color:var(--text)}
+.dlayout{display:grid;grid-template-columns:1fr 330px;min-height:calc(100vh - 120px)}
+.dmain{padding:26px 30px;border-right:1px solid var(--border)}
+.dhero{display:flex;gap:16px;align-items:flex-start;margin-bottom:26px}
+.dlogo{width:66px;height:66px;border-radius:50%;background:var(--s2);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:28px;overflow:hidden;flex-shrink:0}
+.dtitle{font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:3px;line-height:1}
+.dsym{font-family:'Space Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:2px;margin-top:3px}
+.dby{font-family:'Space Mono',monospace;font-size:9px;color:var(--muted);margin-top:5px}
+.dbanner{width:100%;aspect-ratio:21/9;background:linear-gradient(135deg,var(--s1),var(--s2));display:flex;align-items:center;justify-content:center;font-size:60px;margin-bottom:20px;border:1px solid var(--border)}
+.srow{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border);margin-bottom:24px}
+.sc{background:var(--bg);padding:16px;text-align:center}
+.sc .sl{font-family:'Space Mono',monospace;font-size:8px;letter-spacing:2px;color:var(--muted);margin-bottom:4px}
+.sc .sv{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:2px;line-height:1}
+.sc .sv.a{color:var(--acc)}.sc .sv.a2{color:var(--acc2)}.sc .sv.a3{color:var(--acc3)}
+.cbox{background:var(--s1);border:1px solid var(--border);padding:16px;margin-bottom:20px}
+.ctop{display:flex;justify-content:space-between;margin-bottom:9px}
+.ctop .cl{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--muted)}
+.ctop .cv{font-family:'Bebas Neue',sans-serif;font-size:17px;color:var(--acc);letter-spacing:2px}
+.cbar{height:4px;background:var(--border);overflow:hidden;margin-bottom:6px}
+.cfill{height:100%;background:linear-gradient(90deg,var(--acc2),var(--acc));transition:width 1s}
+.cbot{display:flex;justify-content:space-between;font-family:'Space Mono',monospace;font-size:9px;color:var(--muted)}
+.stitle{font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:3px;color:var(--muted);margin-bottom:12px}
+/* SLOT GRID */
+#detSG{display:grid;grid-template-columns:repeat(10,1fr);gap:3px}
+.dslot{aspect-ratio:1;border:1px solid var(--border);background:var(--s1);cursor:pointer;position:relative;transition:.12s;display:flex;align-items:center;justify-content:center;font-family:'Space Mono',monospace;font-size:8px;color:transparent}
+.dslot:hover{border-color:var(--acc);transform:scale(1.07);z-index:2;color:var(--muted)}
+.dslot.owned{background:rgba(0,255,170,.05);border-color:rgba(0,255,170,.12)}
+.dslot.mine{background:rgba(245,255,0,.07);border-color:rgba(245,255,0,.22)}
+.dslot.mine::after{content:'★';position:absolute;bottom:2px;right:2px;font-size:6px;color:var(--acc)}
+@keyframes pslot{0%,100%{box-shadow:0 0 0 0 rgba(255,60,0,.3)}50%{box-shadow:0 0 0 4px rgba(255,60,0,0)}}
+.dslot.hot{animation:pslot 1.8s infinite}
+/* SIDE */
+.dside{display:flex;flex-direction:column}
+.sinfo{padding:20px;border-bottom:1px solid var(--border);flex:1}
+.sinfo h3{font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:3px;color:var(--muted);margin-bottom:16px}
+.irow{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)}
+.irow:last-of-type{border:none}
+.ik{font-family:'Space Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:1px}
+.iv{font-family:'Space Mono',monospace;font-size:10px}
+.iv.a{color:var(--acc)}.iv.a2{color:var(--acc2)}.iv.a3{color:var(--acc3)}
+.sact{padding:16px;display:none;flex-direction:column;gap:7px}
+.pf{display:flex;background:var(--s1);border:1px solid var(--border)}
+.pf span{font-family:'Space Mono',monospace;font-size:9px;color:var(--muted);padding:0 11px;border-right:1px solid var(--border);display:flex;align-items:center}
+.pf input{flex:1;background:none;border:none;outline:none;color:var(--text);font-family:'Space Mono',monospace;font-size:12px;padding:11px}
+.pf input::placeholder{color:var(--muted)}
+.ba{width:100%;font-family:'Space Mono',monospace;font-size:10px;font-weight:700;letter-spacing:2px;padding:11px;border:none;transition:.15s;clip-path:polygon(0 0,calc(100% - 6px) 0,100% 6px,100% 100%,6px 100%,0 calc(100% - 6px))}
+.ba.cl{background:var(--acc3);color:#000}.ba.cl:hover{background:#fff}
+.ba.tk{background:var(--acc2);color:#fff}.ba.tk:hover{background:#ff6633}
+.ba:disabled{opacity:.3;cursor:not-allowed;pointer-events:none}
+.srev{padding:16px;border-top:1px solid var(--border)}
+.rl{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--muted);margin-bottom:4px}
+.rb{font-family:'Bebas Neue',sans-serif;font-size:34px;color:var(--acc);letter-spacing:2px;line-height:1}
+.ru{font-family:'Space Mono',monospace;font-size:9px;color:var(--muted);margin-bottom:11px}
+.bcr{width:100%;font-family:'Space Mono',monospace;font-size:10px;font-weight:700;letter-spacing:2px;padding:11px;background:var(--acc);color:#000;border:none;transition:.15s}
+.bcr:hover{background:#fff}.bcr:disabled{opacity:.3;cursor:not-allowed;pointer-events:none}
+/* MODAL */
+#wm{position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:1000;display:none;align-items:center;justify-content:center}
+#wm.open{display:flex}
+.mbox{background:var(--s1);border:1px solid var(--border2);padding:36px;width:390px;max-width:92vw}
+.mbox h2{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:3px;color:var(--acc);margin-bottom:5px}
+.mbox p{font-size:12px;color:var(--muted);line-height:1.7;margin-bottom:22px}
+.mc{float:right;background:none;border:none;color:var(--muted);font-size:20px;margin-top:-2px}
+.wo{display:flex;align-items:center;gap:13px;padding:13px 15px;border:1px solid var(--border);cursor:pointer;margin-bottom:7px;transition:.15s}
+.wo:hover{border-color:var(--acc);background:rgba(245,255,0,.02)}
+.wi{width:35px;height:35px;background:var(--bg);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.wn{font-family:'Space Mono',monospace;font-size:11px;letter-spacing:1px}
+.ws{font-size:11px;color:var(--muted);margin-top:2px}
+.ml{margin-top:14px;font-family:'Space Mono',monospace;font-size:10px;color:var(--muted);line-height:2}
+.ml a{color:var(--acc)}
+/* TOAST */
+#toast{position:fixed;bottom:24px;right:24px;padding:11px 15px;background:var(--s2);border:1px solid var(--border);font-family:'Space Mono',monospace;font-size:10px;letter-spacing:1px;max-width:270px;transform:translateY(60px);opacity:0;transition:.25s;z-index:9000}
+#toast.show{transform:none;opacity:1}
+#toast.success{border-color:var(--acc3);color:var(--acc3)}
+#toast.error{border-color:var(--acc2);color:var(--acc2)}
+#toast.info{border-color:var(--acc);color:var(--acc)}
+.empty{padding:70px 32px;text-align:center;color:var(--muted)}
+.empty .big{font-family:'Bebas Neue',sans-serif;font-size:42px;letter-spacing:4px;margin-bottom:8px;color:var(--muted2)}
+@media(max-width:860px){.dlayout{grid-template-columns:1fr}.srow{grid-template-columns:1fr 1fr}.mgrid{padding:1px 16px 16px}.ectl{padding:14px 16px}header{padding:0 14px}.hnav{display:none}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo" onclick="go('explore')">MEME<span>SLOTS</span></div>
+  <nav class="hnav">
+    <button class="nb active" id="nExplore" onclick="go('explore')">EXPLORE</button>
+    <button class="nb" id="nCreate" onclick="go('create')">+ CREATE</button>
+    <button class="nb" id="nMine" onclick="go('mine')">MY MEMES</button>
+  </nav>
+  <div class="hright">
+    <div class="netbadge">● TESTNET</div>
+    <button id="cBtn" onclick="openM()">CONNECT WALLET</button>
+  </div>
+</header>
+
+<!-- EXPLORE -->
+<div class="page active" id="pageExplore">
+  <div class="ehero">
+    <h1>EVERY MEME<br>HAS <span>100 SLOTS</span></h1>
+    <p>Claim a slot on any meme token on Bitcoin L1. Earn 1% of every trade. Takeover anytime — but so can anyone else.</p>
+  </div>
+  <div class="ectl">
+    <div class="sw">
+      <span style="color:var(--muted)">⌕</span>
+      <input type="text" placeholder="Search name or symbol..." oninput="filter()"/>
+    </div>
+    <div class="tabs">
+      <button class="tab active" onclick="setTab('all',this)">ALL</button>
+      <button class="tab" onclick="setTab('hot',this)">🔥 HOT</button>
+      <button class="tab" onclick="setTab('new',this)">NEW</button>
+    </div>
+    <button class="bcreate" onclick="go('create')">+ CREATE MEME</button>
+  </div>
+  <div id="mGrid" class="mgrid"></div>
+</div>
+
+<!-- CREATE -->
+<div class="page" id="pageCreate">
+  <div class="cwrap">
+    <h1>LAUNCH YOUR<br><span>MEME TOKEN</span></h1>
+    <p class="csub">Deploy on Bitcoin L1 via OP_NET. 100 slots open for takeover the moment your token goes live. Earn from every trade — forever.</p>
+    <div class="fsec">
+      <div class="fsec-t">01 — TOKEN INFO</div>
+      <div class="fr2">
+        <div class="fr"><label>Token Name *</label><input class="fi" id="fName" placeholder="e.g. DogeCoin2" maxlength="32"/></div>
+        <div class="fr"><label>Symbol *</label><input class="fi" id="fSym" placeholder="DOGE2" maxlength="8" oninput="this.value=this.value.toUpperCase()"/></div>
+      </div>
+      <div class="fr"><label>Description</label><textarea class="fi" id="fDesc" rows="3" placeholder="What's the vibe?"></textarea></div>
+    </div>
+    <div class="fsec">
+      <div class="fsec-t">02 — MEDIA</div>
+      <div class="fr">
+        <label>Banner Image</label>
+        <div class="uarea" onclick="document.getElementById('bInp').click()">
+          <div class="ui">🖼</div><div class="ut">Drop or <span>browse</span> — PNG/JPG/GIF</div>
+          <input id="bInp" type="file" accept="image/*" style="display:none" onchange="prevB(event)"/>
+        </div>
+        <img id="bPrev" class="iprev" alt=""/>
+      </div>
+      <div class="fr">
+        <label>Token Logo</label>
+        <div class="lrow">
+          <div class="lcirc" id="lCirc">🐸<img id="lPrev" alt=""/></div>
+          <div>
+            <button class="fi" style="background:var(--s1);color:var(--muted);font-size:12px;padding:8px 13px" onclick="document.getElementById('lInp').click()">Upload Logo</button>
+            <input id="lInp" type="file" accept="image/*" style="display:none" onchange="prevL(event)"/>
+            <div style="font-size:11px;color:var(--muted);margin-top:5px">Square recommended</div>
+          </div>
+        </div>
+      </div>
+      <div class="fr"><label>Or Image URL</label><input class="fi" id="fImg" type="url" placeholder="https://..." oninput="urlP()"/></div>
+    </div>
+    <div class="fsec">
+      <div class="fsec-t">03 — SLOT CONFIG</div>
+      <div class="fr2">
+        <div class="fr">
+          <label>Floor Price (SAT) *</label>
+          <input class="fi" id="fFloor" type="number" value="1000" min="500"/>
+          <div style="font-size:11px;color:var(--muted);margin-top:4px">Min 500 SAT to claim empty slot</div>
+        </div>
+        <div class="fr">
+          <label>Total Supply</label>
+          <input class="fi" value="1,000,000,000" readonly style="color:var(--muted)"/>
+          <div style="font-size:11px;color:var(--muted);margin-top:4px">Fixed 1 billion tokens</div>
+        </div>
+      </div>
+    </div>
+    <div class="feebox">
+      <div class="ft">DEPLOYMENT COST</div>
+      <div class="feerow"><span class="fl">Protocol listing fee</span><span class="fv">10,000 SAT</span></div>
+      <div class="fdiv"></div>
+      <div class="feerow"><span class="fl">Estimated tx fee</span><span class="fm">~2,000 SAT</span></div>
+    </div>
+    <button class="bdeploy" id="bDeploy" onclick="doCreate()">DEPLOY MEME TOKEN →</button>
+    <div class="dsteps" id="dSteps">
+      <div style="font-family:'Space Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--muted);margin-bottom:16px;padding-bottom:9px;border-bottom:1px solid var(--border)">DEPLOYMENT PROGRESS</div>
+      <div class="dstep" id="ds1"><div class="dsn active">1</div><div class="dsc"><div class="dt">Deploy RevenueSharing</div><div class="dd">100-slot revenue contract on OP_NET</div><div class="dh" id="dh1"></div></div></div>
+      <div class="dstep" id="ds2"><div class="dsn">2</div><div class="dsc"><div class="dt">Deploy MemeToken (OP_20)</div><div class="dd">Token with 1% auto fee routing</div><div class="dh" id="dh2"></div></div></div>
+      <div class="dstep" id="ds3"><div class="dsn">3</div><div class="dsc"><div class="dt">Register in Factory</div><div class="dd">Lists your meme on MEMESLOTS</div><div class="dh" id="dh3"></div></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- MY MEMES -->
+<div class="page" id="pageMine">
+  <div class="ehero">
+    <h1>MY <span>MEMES</span></h1>
+    <p>Tokens you created and slots you own across all memes.</p>
+  </div>
+  <div id="myGrid" class="mgrid"></div>
+</div>
+
+<!-- DETAIL -->
+<div class="page" id="pageDetail">
+  <div class="dback" onclick="go('explore')">← Back to Explore</div>
+  <div class="dlayout">
+    <div class="dmain">
+      <div class="dhero">
+        <div class="dlogo" id="dLogo">🐸</div>
+        <div>
+          <div class="dtitle" id="dName">—</div>
+          <div class="dsym" id="dSym">—</div>
+          <div class="dby" id="dBy">by —</div>
+        </div>
+      </div>
+      <div class="dbanner" id="dBanner"></div>
+      <div class="srow">
+        <div class="sc"><div class="sl">CYCLE</div><div class="sv a" id="dC">—</div></div>
+        <div class="sc"><div class="sl">CYCLE FEE</div><div class="sv" id="dF">—</div></div>
+        <div class="sc"><div class="sl">TAKEOVERS</div><div class="sv a2" id="dT">—</div></div>
+        <div class="sc"><div class="sl">SLOTS FILLED</div><div class="sv a3" id="dSF">—</div></div>
+      </div>
+      <div class="cbox">
+        <div class="ctop"><span class="cl">CURRENT CYCLE</span><span class="cv" id="dCN">—</span></div>
+        <div class="cbar"><div class="cfill" id="dCP" style="width:0%"></div></div>
+        <div class="cbot"><span id="dCS">—</span><span id="dCL">—</span></div>
+      </div>
+      <div class="stitle">100 SLOTS</div>
+      <div id="detSG"></div>
+    </div>
+    <div class="dside">
+      <div class="sinfo">
+        <h3>SLOT DETAIL</h3>
+        <div id="sI"><div style="color:var(--muted);font-size:13px">← Click a slot to interact</div></div>
+      </div>
+      <div class="sact" id="sA">
+        <div class="pf"><span>SAT</span><input id="dP" type="number" placeholder="Enter amount..."/></div>
+        <button class="ba cl" id="bCl" onclick="doClaim()" disabled>CLAIM SLOT</button>
+        <button class="ba tk" id="bTk" onclick="doTakeover()" disabled>⚡ TAKEOVER</button>
+      </div>
+      <div class="srev">
+        <div class="rl">MY PENDING REVENUE</div>
+        <div class="rb" id="mR">0</div>
+        <div class="ru">SATOSHI</div>
+        <button class="bcr" id="bCR" disabled onclick="doClaimRev()">CLAIM REVENUE</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- WALLET MODAL -->
+<div id="wm">
+  <div class="mbox">
+    <button class="mc" onclick="closeM()">✕</button>
+    <h2>CONNECT WALLET</h2>
+    <p>Connect your Bitcoin wallet to claim slots and earn revenue on OP_NET Bitcoin L1.</p>
+    <div class="wo" onclick="connOP()">
+      <div class="wi">₿</div>
+      <div><div class="wn">OP_WALLET</div><div class="ws">Official OP_NET extension</div></div>
+    </div>
+    <div class="wo" onclick="connUS()">
+      <div class="wi">🟠</div>
+      <div><div class="wn">UNISAT</div><div class="ws">Bitcoin wallet with OP_NET support</div></div>
+    </div>
+    <div class="ml">No OP_WALLET?<br><a href="https://chromewebstore.google.com/detail/opwallet/pmbjpcmaaladnfpacpmhmnfmpklgbdjb" target="_blank">→ Install from Chrome Web Store</a></div>
+  </div>
+</div>
+<div id="toast"></div>
+
+<script>
+const CFG={FEE:10000,MIN_FLOOR:500,CYCLE:432};
+const S={w:null,tab:'all',memes:[],fil:[],meme:null,slot:null,slots:[],rev:0};
+
+function go(n){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nb').forEach(b=>b.classList.remove('active'));
+  document.getElementById('page'+n[0].toUpperCase()+n.slice(1)).classList.add('active');
+  const nm={explore:'nExplore',create:'nCreate',mine:'nMine',detail:'nExplore'};
+  if(nm[n])document.getElementById(nm[n]).classList.add('active');
+  if(n==='explore')renderG(S.fil);
+  if(n==='mine')renderMine();
+}
+
+function openM(){document.getElementById('wm').classList.add('open')}
+function closeM(){document.getElementById('wm').classList.remove('open')}
+
+async function connOP(){
+  try{
+    if(!window.opnet){toast('OP_WALLET not found','error');setTimeout(()=>window.open('https://chromewebstore.google.com/detail/opwallet/pmbjpcmaaladnfpacpmhmnfmpklgbdjb','_blank'),700);return}
+    toast('Connecting...','info');
+    const a=await window.opnet.requestAccounts();
+    if(a?.length)onConn(a[0],'OP_WALLET');
+  }catch(e){toast('Error: '+e.message,'error')}
+}
+async function connUS(){
+  try{
+    if(!window.unisat){toast('Unisat not found','error');return}
+    toast('Connecting...','info');
+    const a=await window.unisat.requestAccounts();
+    if(a?.length)onConn(a[0],'Unisat');
+  }catch(e){toast('Error: '+e.message,'error')}
+}
+function onConn(addr,name){
+  S.w=addr;closeM();
+  const b=document.getElementById('cBtn');
+  b.textContent=tr(addr);b.classList.add('on');
+  b.onclick=()=>{S.w=null;b.textContent='CONNECT WALLET';b.classList.remove('on');b.onclick=openM;toast('Disconnected','info')};
+  toast('Connected via '+name,'success');
+}
+
+function loadMock(){
+  const em=['🐸','🦆','🐶','🚀','💎','🌕','🦊','🐱','🔥','⚡'];
+  const sy=['PEPE2','QUACK','DOGE3','MOON','DIAM','LUNA2','FOX','KITTY','FLAME','ZAP'];
+  const nm=['Pepe2Coin','QuackCoin','Doge3Coin','MoonShot','DiamondCoin','Luna2Coin','FoxCoin','KittyCoin','FlameCoin','ZapCoin'];
+  S.memes=sy.map((s,i)=>({id:i,name:nm[i],symbol:s,emoji:em[i],creator:'0x'+Math.random().toString(16).slice(2,18),floorPrice:500+~~(Math.random()*4500),takeovers:~~(Math.random()*180),filled:~~(Math.random()*100),cycFee:~~(Math.random()*80000),createdBlock:100000+i*44,isNew:i>=8,isHot:i<3}));
+  S.fil=[...S.memes];renderG(S.fil);
+}
+
+function renderG(list){
+  const g=document.getElementById('mGrid');
+  if(!list.length){g.innerHTML='<div class="empty"><div class="big">NO MEMES</div><div>Be the first to create one!</div></div>';return}
+  g.innerHTML=list.map(m=>`
+    <div class="mcard" onclick="openMeme(${m.id})">
+      <div class="mcbanner">${m.emoji}</div>
+      <div class="mcbody">
+        <div class="mctop">
+          <div class="mclogo">${m.emoji}</div>
+          <div class="mcn"><div class="mn">${m.name}</div><div class="ms">${m.symbol}</div></div>
+          ${m.isNew?'<span class="bdg new">NEW</span>':''}
+          ${m.isHot?'<span class="bdg hot">🔥 HOT</span>':''}
+        </div>
+        <div class="mcs">
+          <div class="ms2"><div class="l">SLOTS</div><div class="v a3">${m.filled}/100</div></div>
+          <div class="ms2"><div class="l">TAKEOVERS</div><div class="v a2">${m.takeovers}</div></div>
+          <div class="ms2"><div class="l">CYCLE FEE</div><div class="v a">${m.cycFee.toLocaleString()}</div></div>
+        </div>
+      </div>
+      <div class="mcfoot"><span class="cr">by ${tr(m.creator)}</span><span class="fp">⌂ ${m.floorPrice.toLocaleString()} SAT</span></div>
+    </div>`).join('');
+}
+
+function filter(){
+  const q=document.querySelector('.sw input').value.toLowerCase();
+  S.fil=S.memes.filter(m=>!q||m.name.toLowerCase().includes(q)||m.symbol.toLowerCase().includes(q));
+  applyTab();
+}
+function setTab(t,btn){S.tab=t;document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');applyTab()}
+function applyTab(){
+  let l=[...S.fil];
+  if(S.tab==='hot')l=l.sort((a,b)=>b.takeovers-a.takeovers);
+  if(S.tab==='new')l=l.sort((a,b)=>b.createdBlock-a.createdBlock);
+  renderG(l);
+}
+
+function openMeme(id){
+  const m=S.memes.find(x=>x.id===id);if(!m)return;
+  S.meme=m;S.slot=null;S.slots=Array(100).fill(null);
+  for(let i=0;i<100;i++){
+    if(Math.random()>.42)S.slots[i]={id:i,owner:'0x'+Math.random().toString(16).slice(2,18),price:m.floorPrice*(1+~~(Math.random()*5)),sinceCycle:~~(Math.random()*3),ismine:S.w&&Math.random()>.88};
+  }
+  document.getElementById('dLogo').textContent=m.emoji;
+  document.getElementById('dName').textContent=m.name;
+  document.getElementById('dSym').textContent=m.symbol;
+  document.getElementById('dBy').textContent='by '+tr(m.creator);
+  document.getElementById('dBanner').textContent=m.emoji;
+  document.getElementById('dC').textContent='3';
+  document.getElementById('dF').textContent=m.cycFee.toLocaleString();
+  document.getElementById('dT').textContent=m.takeovers;
+  document.getElementById('dSF').textContent=S.slots.filter(Boolean).length+'/100';
+  const bl=187,pr=~~(((CFG.CYCLE-bl)/CFG.CYCLE)*100);
+  document.getElementById('dCN').textContent='#3';
+  document.getElementById('dCP').style.width=pr+'%';
+  document.getElementById('dCL').textContent=bl+' blocks left';
+  document.getElementById('dCS').textContent='Block 101296';
+  S.rev=S.w?~~(Math.random()*4000):0;
+  document.getElementById('mR').textContent=S.rev.toLocaleString();
+  document.getElementById('bCR').disabled=S.rev===0;
+  renderSG();go('detail');
+}
+
+function renderSG(){
+  const g=document.getElementById('detSG');g.innerHTML='';
+  for(let i=0;i<100;i++){
+    const sl=S.slots[i];
+    const d=document.createElement('div');
+    d.className='dslot'+(sl?(sl.ismine?' mine':' owned'):'');
+    if(sl&&sl.price>(S.meme?.floorPrice||0)*5)d.classList.add('hot');
+    d.textContent=i;d.dataset.id=i;d.onclick=()=>selSlot(i);
+    if(S.slot===i)d.style.borderColor='var(--acc)';
+    g.appendChild(d);
+  }
+}
+
+function selSlot(id){
+  S.slot=id;renderSG();
+  const sl=S.slots[id],fp=S.meme?.floorPrice||CFG.MIN_FLOOR;
+  document.getElementById('sI').innerHTML=sl?`
+    <div class="irow"><span class="ik">SLOT</span><span class="iv a">#${id}</span></div>
+    <div class="irow"><span class="ik">STATUS</span><span class="iv a2">${sl.ismine?'★ YOURS':'OWNED'}</span></div>
+    <div class="irow"><span class="ik">OWNER</span><span class="iv" style="font-size:9px">${tr(sl.owner)}</span></div>
+    <div class="irow"><span class="ik">PRICE</span><span class="iv a">${sl.price.toLocaleString()} SAT</span></div>
+    <div class="irow"><span class="ik">SINCE CYCLE</span><span class="iv">#${sl.sinceCycle}</span></div>`:`
+    <div class="irow"><span class="ik">SLOT</span><span class="iv a">#${id}</span></div>
+    <div class="irow"><span class="ik">STATUS</span><span class="iv a3">EMPTY</span></div>
+    <div class="irow"><span class="ik">FLOOR PRICE</span><span class="iv">${fp.toLocaleString()} SAT</span></div>
+    <div class="irow"><span class="ik">REWARD</span><span class="iv">1% per trade/cycle</span></div>`;
+  const sa=document.getElementById('sA');sa.style.display='flex';sa.style.flexDirection='column';
+  document.getElementById('dP').placeholder=sl?'> '+sl.price+' sat':'Min '+fp+' sat';
+  document.getElementById('bCl').disabled=!!sl;
+  document.getElementById('bTk').disabled=!sl||sl.ismine||!S.w;
+}
+
+function nw(){if(!S.w){openM();return false}return true}
+
+function doClaim(){
+  if(!nw())return;
+  const a=parseInt(document.getElementById('dP').value),fp=S.meme?.floorPrice||CFG.MIN_FLOOR;
+  if(!a||a<fp){toast('Min '+fp+' SAT','error');return}
+  toast('Sending claim...','info');
+  setTimeout(()=>{S.slots[S.slot]={id:S.slot,owner:S.w,price:a,sinceCycle:3,ismine:true};renderSG();selSlot(S.slot);toast('Slot #'+S.slot+' claimed!','success');},1500);
+}
+function doTakeover(){
+  if(!nw())return;
+  const sl=S.slots[S.slot],a=parseInt(document.getElementById('dP').value);
+  if(!a||a<=sl.price){toast('Must pay > '+sl.price+' SAT','error');return}
+  toast('Sending takeover...','info');
+  setTimeout(()=>{S.slots[S.slot]={id:S.slot,owner:S.w,price:a,sinceCycle:3,ismine:true};renderSG();selSlot(S.slot);toast('Slot #'+S.slot+' taken over!','success');},1500);
+}
+function doClaimRev(){
+  if(!nw())return;
+  toast('Claiming '+S.rev.toLocaleString()+' SAT...','info');
+  setTimeout(()=>{S.rev=0;document.getElementById('mR').textContent='0';document.getElementById('bCR').disabled=true;toast('Revenue claimed!','success');},1500);
+}
+
+function prevB(e){const f=e.target.files[0];if(!f)return;const p=document.getElementById('bPrev');p.src=URL.createObjectURL(f);p.style.display='block'}
+function prevL(e){const f=e.target.files[0];if(!f)return;const p=document.getElementById('lPrev'),c=document.getElementById('lCirc');p.src=URL.createObjectURL(f);p.style.display='block';c.textContent='';c.appendChild(p)}
+function urlP(){const u=document.getElementById('fImg').value,p=document.getElementById('bPrev');if(u){p.src=u;p.style.display='block'}}
+
+async function doCreate(){
+  if(!nw())return;
+  const name=document.getElementById('fName').value.trim(),sym=document.getElementById('fSym').value.trim(),floor=parseInt(document.getElementById('fFloor').value);
+  if(!name){toast('Enter name','error');return}
+  if(!sym){toast('Enter symbol','error');return}
+  if(!floor||floor<CFG.MIN_FLOOR){toast('Floor min 500 SAT','error');return}
+  document.getElementById('bDeploy').disabled=true;
+  document.getElementById('dSteps').style.display='block';
+  await doStep('ds1','dh1',1800);
+  await doStep('ds2','dh2',1800);
+  await doStep('ds3','dh3',1400);
+  const nm={id:S.memes.length,name,symbol:sym,emoji:'🆕',creator:S.w,floorPrice:floor,takeovers:0,filled:0,cycFee:0,createdBlock:999999,isNew:true,isHot:false};
+  S.memes.unshift(nm);S.fil=[...S.memes];
+  toast('🎉 Meme deployed!','success');
+  setTimeout(()=>openMeme(nm.id),1200);
+}
+async function doStep(sid,hid,ms){
+  const el=document.getElementById(sid),n=el.querySelector('.dsn');n.classList.add('active');
+  await new Promise(r=>setTimeout(r,ms));
+  n.classList.remove('active');n.classList.add('done');n.textContent='✓';
+  document.getElementById(hid).textContent='TX: 0x'+Math.random().toString(16).slice(2,14);
+  const nx=el.nextElementSibling;if(nx)nx.querySelector('.dsn')?.classList.add('active');
+}
+
+function renderMine(){
+  const g=document.getElementById('myGrid');
+  if(!S.w){g.innerHTML='<div class="empty"><div class="big">NOT CONNECTED</div><div>Connect wallet first</div></div>';return}
+  const mine=S.memes.filter(m=>m.creator?.toLowerCase()===S.w.toLowerCase());
+  if(!mine.length){g.innerHTML='<div class="empty"><div class="big">NO MEMES YET</div><div>Create your first meme token!</div></div>';return}
+  const tmp=document.createElement('div');tmp.className='mgrid';
+  document.body.appendChild(tmp);
+  const prevG=document.getElementById('mGrid');
+  const old=prevG.innerHTML;
+  renderG(mine);
+  g.innerHTML=document.getElementById('mGrid').innerHTML;
+  prevG.innerHTML=old;
+}
+
+function tr(a){if(!a)return'—';return a.length>12?a.slice(0,7)+'…'+a.slice(-5):a}
+function toast(msg,t='info'){const el=document.getElementById('toast');el.textContent=msg;el.className='show '+t;clearTimeout(window._tt);window._tt=setTimeout(()=>el.classList.remove('show'),3000)}
+
+window.addEventListener('load',()=>{
+  loadMock();
+  if(window.opnet?.selectedAddress)onConn(window.opnet.selectedAddress,'OP_WALLET');
+  window.opnet?.on?.('accountsChanged',a=>{if(!a.length){S.w=null}else{onConn(a[0],'OP_WALLET')}});
+});
+</script>
+</body>
+</html>
