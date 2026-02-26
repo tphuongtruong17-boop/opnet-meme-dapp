@@ -1,0 +1,25 @@
+{
+  "name": "opnet-meme-revenue-dapp",
+  "version": "1.0.0",
+  "description": "Meme token dApp with 100-slot revenue sharing on OP_NET (Bitcoin L1)",
+  "scripts": {
+    "build": "npx asc assembly/index.ts --target release",
+    "build:debug": "npx asc assembly/index.ts --target debug",
+    "build:meme": "npx asc assembly/contracts/MemeToken.ts --target release --outFile build/MemeToken.wasm",
+    "build:revenue": "npx asc assembly/contracts/RevenueSharing.ts --target release --outFile build/RevenueSharing.wasm",
+    "build:factory": "npx asc assembly/contracts/MemeFactory.ts --target release --outFile build/MemeFactory.wasm",
+    "test": "npx jest",
+    "lint": "npx eslint assembly/**/*.ts"
+  },
+  "dependencies": {
+    "@btc-vision/btc-runtime": "latest",
+    "as-bignum": "latest"
+  },
+  "devDependencies": {
+    "assemblyscript": "latest",
+    "@btc-vision/unit-test-framework": "latest",
+    "typescript": "^5.0.0",
+    "jest": "^29.0.0"
+  },
+  "license": "MIT"
+}
